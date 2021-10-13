@@ -7,24 +7,23 @@
 namespace Magento\CheckoutAgreements\Model\Checkout\Plugin;
 
 use Magento\CheckoutAgreements\Model\AgreementsProvider;
-use Magento\CheckoutAgreements\Model\Api\SearchCriteria\ActiveStoreAgreementsFilter;
-use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\CheckoutAgreements\Model\Api\SearchCriteria\ActiveStoreAgreementsFilter;
 
 /**
- * Class Validation validates the agreement based on the payment method
+ * Class Validation
  */
 class Validation
 {
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface
      */
-    private $scopeConfiguration;
+    protected $scopeConfiguration;
 
     /**
      * @var \Magento\Checkout\Api\AgreementsValidatorInterface
      */
-    private $agreementsValidator;
+    protected $agreementsValidator;
 
     /**
      * @var \Magento\CheckoutAgreements\Api\CheckoutAgreementsListInterface
@@ -37,36 +36,24 @@ class Validation
     private $activeStoreAgreementsFilter;
 
     /**
-     * Quote repository.
-     *
-     * @var \Magento\Quote\Api\CartRepositoryInterface
-     */
-    private $quoteRepository;
-
-    /**
      * @param \Magento\Checkout\Api\AgreementsValidatorInterface $agreementsValidator
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfiguration
      * @param \Magento\CheckoutAgreements\Api\CheckoutAgreementsListInterface $checkoutAgreementsList
      * @param ActiveStoreAgreementsFilter $activeStoreAgreementsFilter
-     * @param CartRepositoryInterface $quoteRepository
      */
     public function __construct(
         \Magento\Checkout\Api\AgreementsValidatorInterface $agreementsValidator,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfiguration,
         \Magento\CheckoutAgreements\Api\CheckoutAgreementsListInterface $checkoutAgreementsList,
-        \Magento\CheckoutAgreements\Model\Api\SearchCriteria\ActiveStoreAgreementsFilter $activeStoreAgreementsFilter,
-        CartRepositoryInterface $quoteRepository
+        \Magento\CheckoutAgreements\Model\Api\SearchCriteria\ActiveStoreAgreementsFilter $activeStoreAgreementsFilter
     ) {
         $this->agreementsValidator = $agreementsValidator;
         $this->scopeConfiguration = $scopeConfiguration;
         $this->checkoutAgreementsList = $checkoutAgreementsList;
         $this->activeStoreAgreementsFilter = $activeStoreAgreementsFilter;
-        $this->quoteRepository = $quoteRepository;
     }
 
     /**
-     * Validates agreements before save payment information and  order placing.
-     *
      * @param \Magento\Checkout\Api\PaymentInformationManagementInterface $subject
      * @param int $cartId
      * @param \Magento\Quote\Api\Data\PaymentInterface $paymentMethod
@@ -87,16 +74,13 @@ class Validation
     }
 
     /**
-     * Check validation before saving the payment information
-     *
      * @param \Magento\Checkout\Api\PaymentInformationManagementInterface $subject
      * @param int $cartId
      * @param \Magento\Quote\Api\Data\PaymentInterface $paymentMethod
      * @param \Magento\Quote\Api\Data\AddressInterface|null $billingAddress
+     * @throws \Magento\Framework\Exception\CouldNotSaveException
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     * @throws \Magento\Framework\Exception\CouldNotSaveException
      */
     public function beforeSavePaymentInformation(
         \Magento\Checkout\Api\PaymentInformationManagementInterface $subject,
@@ -104,15 +88,12 @@ class Validation
         \Magento\Quote\Api\Data\PaymentInterface $paymentMethod,
         \Magento\Quote\Api\Data\AddressInterface $billingAddress = null
     ) {
-        $quote = $this->quoteRepository->getActive($cartId);
-        if ($this->isAgreementEnabled() && !$quote->getIsMultiShipping()) {
+        if ($this->isAgreementEnabled()) {
             $this->validateAgreements($paymentMethod);
         }
     }
 
     /**
-     * Validate agreements base on the payment method
-     *
      * @param \Magento\Quote\Api\Data\PaymentInterface $paymentMethod
      * @throws \Magento\Framework\Exception\CouldNotSaveException
      * @return void
@@ -134,11 +115,10 @@ class Validation
     }
 
     /**
-     * Verify if agreement validation needed.
-     *
+     * Verify if agreement validation needed
      * @return bool
      */
-    private function isAgreementEnabled()
+    protected function isAgreementEnabled()
     {
         $isAgreementsEnabled = $this->scopeConfiguration->isSetFlag(
             AgreementsProvider::PATH_ENABLED,

@@ -19,7 +19,7 @@ define([
          *
          * @returns {Boolean}
          */
-        validate: function (hideError) {
+        validate: function () {
             var isValid = true;
 
             if (!agreementsConfig.isEnabled || $(agreementsInputPath).length === 0) {
@@ -28,8 +28,7 @@ define([
 
             $(agreementsInputPath).each(function (index, element) {
                 if (!$.validator.validateSingleElement(element, {
-                    errorElement: 'div',
-                    hideError: hideError || false
+                    errorElement: 'div'
                 })) {
                     isValid = false;
                 }
